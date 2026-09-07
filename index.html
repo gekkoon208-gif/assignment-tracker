@@ -1,1 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignment Tracker</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7ff;
+      color: #25233a;
+    }
+
+    header {
+      background: linear-gradient(135deg, #6f7bf7, #9b72e8);
+      color: white;
+      padding: 28px 7%;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    main {
+      width: min(1200px, 90%);
+      margin: 28px auto;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 5px 18px rgba(61, 55, 110, 0.08);
+    }
+
+    .card p {
+      margin: 0;
+      color: #6f6b80;
+    }
+
+    .card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 30px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #7067e8;
+      color: white;
+    }
+
+    .secondary {
+      background: #ebe9ff;
+      color: #5148ba;
+    }
+
+    .danger {
+      background: #ffe8ec;
+      color: #c44058;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    select, input, textarea {
+      border: 1px solid #dcdced;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      width: 100%;
+    }
+
+    .filters select {
+      width: auto;
+    }
+
+    .table-box {
+      background: white;
+      border-radius: 16px;
+      overflow-x: auto;
+      box-shadow: 0 5px 18px rgba(61, 55, 110, 0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #eeeeF6;
+    }
+
+    th {
+      background: #f0efff;
+      color: #4c4773;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .completed {
+      background: #daf5e7;
+      color: #23764a;
+    }
+
+    .progress {
+      background: #fff1c9;
+      color: #936b00;
+    }
+
+    .not-started {
+      background: #e9e9f2;
+      color: #5f5f70;
+    }
+
+    .overdue {
+      color: #d13e55;
+      font-weight: bold;
+    }
+
+    .empty {
+      padding: 45px;
+      text-align: center;
+      color: #777386;
+    }
+
+    dialog {
+      width: min(580px, 92%);
+      border: none;
+      border-radius: 18px;
+      padding: 0;
+      box-shadow: 0 20px 60px rgba(24, 20, 60, 0.25);
+    }
+
+    dialog::backdrop {
+      background: rgba(25, 22, 55, 0.45);
+    }
+
+    .modal-content {
+      padding: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 7px;
+    }
+
+    .action-buttons button {
+      padding: 7px 10px;
+    }
+
+    @media (max-width: 750px) {
+      .summary {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>My Assignment Tracker</h1>
+    <p>Keep track of deadlines and completed work.</p>
+  </header>
+
+  <main>
+    <section class="summary">
+      <div class="card">
+        <p>Due Today</p>
+        <strong id="todayCount">0</strong>
+      </div>
+
+      <div class="card">
+        <p>Upcoming</p>
+        <strong id="upcomingCount">0</strong>
+      </div>
+
+      <div class="card">
+        <p>Overdue</p>
+        <strong id="overdueCount">0</strong>
+      </div>
+
+      <div class="card">
+        <p>Completed</p>
+        <strong id="completedCount">0</strong>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <div class="filters">
+        <select id="statusFilter">
+          <option value="All">All Statuses</option>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+
+        <select id="priorityFilter">
+          <option value="All">All Priorities</option>
+          <option value="High">High Priority</option>
+          <option value="Medium">Medium Priority</option>
+          <option value="Low">Low Priority</option>
+        </select>
+      </div>
+
+      <button class="primary" onclick="openForm()">＋ Add Assignment</button>
+    </section>
+
+    <section class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>Assignment</th>
+            <th>Course</th>
+            <th>Type</th>
+            <th>Deadline</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Last Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="assignmentTable"></tbody>
+      </table>
+
+      <div class="empty" id="emptyMessage">
+        No assignments yet. Click “Add Assignment” to begin.
+      </div>
+    </section>
+  </main>
+
+  <dialog id="assignmentDialog">
+    <div class="modal-content">
+      <h2 id="formTitle">Add Assignment</h2>
+
+      <form id="assignmentForm">
+        <div class="form-grid">
+          <div class="full">
+            <label for="title">Assignment Title</label>
+            <input id="title" required>
+          </div>
+
+          <div>
+            <label for="course">Course / Subject</label>
+            <input id="course" required>
+          </div>
+
+          <div>
+            <label for="type">Assignment Type</label>
+            <input id="type" placeholder="Report, PPT, Quiz...">
+          </div>
+
+          <div class="full">
+            <label for="deadline">Due Date and Time</label>
+            <input id="deadline" type="datetime-local" required>
+          </div>
+
+          <div>
+            <label for="priority">Priority</label>
+            <select id="priority">
+              <option>High</option>
+              <option selected>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="status">Status</label>
+            <select id="status">
+              <option>Not Started</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="notes">Notes</label>
+            <textarea id="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary" onclick="closeForm()">Cancel</button>
+          <button type="submit" class="primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    let assignments = JSON.parse(localStorage.getItem("assignments")) || [];
+    let editingId = null;
+
+    const form = document.getElementById("assignmentForm");
+    const dialog = document.getElementById("assignmentDialog");
+
+    function saveData() {
+      localStorage.setItem("assignments", JSON.stringify(assignments));
+    }
+
+    function escapeText(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function openForm(id = null) {
+      editingId = id;
+      form.reset();
+
+      if (id !== null) {
+        const item = assignments.find(a => a.id === id);
+        document.getElementById("formTitle").textContent = "Edit Assignment";
+        document.getElementById("title").value = item.title;
+        document.getElementById("course").value = item.course;
+        document.getElementById("type").value = item.type;
+        document.getElementById("deadline").value = item.deadline;
+        document.getElementById("priority").value = item.priority;
+        document.getElementById("status").value = item.status;
+        document.getElementById("notes").value = item.notes;
+      } else {
+        document.getElementById("formTitle").textContent = "Add Assignment";
+      }
+
+      dialog.showModal();
+    }
+
+    function closeForm() {
+      dialog.close();
+      editingId = null;
+    }
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const data = {
+        id: editingId ?? Date.now(),
+        title: document.getElementById("title").value.trim(),
+        course: document.getElementById("course").value.trim(),
+        type: document.getElementById("type").value.trim(),
+        deadline: document.getElementById("deadline").value,
+        priority: document.getElementById("priority").value,
+        status: document.getElementById("status").value,
+        notes: document.getElementById("notes").value.trim(),
+        updatedAt: new Date().toLocaleString()
+      };
+
+      if (editingId !== null) {
+        assignments = assignments.map(item =>
+          item.id === editingId ? data : item
+        );
+      } else {
+        assignments.push(data);
+      }
+
+      saveData();
+      closeForm();
+      render();
+    });
+
+    function deleteAssignment(id) {
+      if (!confirm("Delete this assignment?")) return;
+
+      assignments = assignments.filter(item => item.id !== id);
+      saveData();
+      render();
+    }
+
+    function markCompleted(id) {
+      assignments = assignments.map(item => {
+        if (item.id === id) {
+          return {
+            ...item,
+            status: "Completed",
+            updatedAt: new Date().toLocaleString()
+          };
+        }
+        return item;
+      });
+
+      saveData();
+      render();
+    }
+
+    function getDateOnly(date) {
+      return new Date(date).toDateString();
+    }
+
+    function render() {
+      const table = document.getElementById("assignmentTable");
+      const statusFilter = document.getElementById("statusFilter").value;
+      const priorityFilter = document.getElementById("priorityFilter").value;
+      const now = new Date();
+
+      const filtered = assignments
+        .filter(item =>
+          (statusFilter === "All" || item.status === statusFilter) &&
+          (priorityFilter === "All" || item.priority === priorityFilter)
+        )
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      table.innerHTML = "";
+
+      filtered.forEach(item => {
+        const deadline = new Date(item.deadline);
+        const isOverdue = deadline < now && item.status !== "Completed";
+
+        const statusClass =
+          item.status === "Completed"
+            ? "completed"
+            : item.status === "In Progress"
+            ? "progress"
+            : "not-started";
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>
+            <strong>${escapeText(item.title)}</strong>
+            ${item.notes ? `<div style="font-size:13px;color:#777386;margin-top:5px">${escapeText(item.notes)}</div>` : ""}
+          </td>
+          <td>${escapeText(item.course)}</td>
+          <td>${escapeText(item.type || "-")}</td>
+          <td class="${isOverdue ? "overdue" : ""}">
+            ${deadline.toLocaleString()}
+            ${isOverdue ? "<br>Overdue" : ""}
+          </td>
+          <td>${escapeText(item.priority)}</td>
+          <td><span class="badge ${statusClass}">${escapeText(item.status)}</span></td>
+          <td>${escapeText(item.updatedAt)}</td>
+          <td>
+            <div class="action-buttons">
+              ${item.status !== "Completed"
+                ? `<button class="secondary" onclick="markCompleted(${item.id})">✓</button>`
+                : ""}
+              <button class="secondary" onclick="openForm(${item.id})">Edit</button>
+              <button class="danger" onclick="deleteAssignment(${item.id})">Delete</button>
+            </div>
+          </td>
+        `;
+
+        table.appendChild(row);
+      });
+
+      document.getElementById("emptyMessage").style.display =
+        filtered.length ? "none" : "block";
+
+      document.getElementById("todayCount").textContent =
+        assignments.filter(item =>
+          getDateOnly(item.deadline) === now.toDateString() &&
+          item.status !== "Completed"
+        ).length;
+
+      document.getElementById("upcomingCount").textContent =
+        assignments.filter(item =>
+          new Date(item.deadline) > now &&
+          getDateOnly(item.deadline) !== now.toDateString() &&
+          item.status !== "Completed"
+        ).length;
+
+      document.getElementById("overdueCount").textContent =
+        assignments.filter(item =>
+          new Date(item.deadline) < now &&
+          item.status !== "Completed"
+        ).length;
+
+      document.getElementById("completedCount").textContent =
+        assignments.filter(item => item.status === "Completed").length;
+    }
+
+    document.getElementById("statusFilter").addEventListener("change", render);
+    document.getElementById("priorityFilter").addEventListener("change", render);
+
+    render();
+  </script>
+</body>
+</html>
